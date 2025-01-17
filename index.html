@@ -120,9 +120,8 @@
       <div class="card">
         <div class="card-header">Step 3: Select Hardware</div>
         <div class="card-body">
-          <div class="form-group">
-            <label>Hardware:</label>
-            <div class="hardware-entry">
+          <div id="hardware-list">
+            <div class="hardware-entry mb-3">
               <select class="form-select hardware-type">
                 <option value="Android Player">Android Player</option>
                 <option value="Pro Player">Pro Player</option>
@@ -131,6 +130,7 @@
               <input type="number" class="form-control hardware-quantity" min="1" value="1" placeholder="Quantity">
             </div>
           </div>
+          <button type="button" class="btn btn-secondary" onclick="addHardware()">Add More Hardware</button>
         </div>
       </div>
 
@@ -208,6 +208,21 @@
   </div>
 
   <script>
+    function addHardware() {
+      const hardwareList = document.getElementById('hardware-list');
+      const newHardware = document.createElement('div');
+      newHardware.classList.add('hardware-entry', 'mb-3');
+      newHardware.innerHTML = `
+        <select class="form-select hardware-type">
+          <option value="Android Player">Android Player</option>
+          <option value="Pro Player">Pro Player</option>
+          <option value="ProMax Player">ProMax Player</option>
+        </select>
+        <input type="number" class="form-control hardware-quantity" min="1" value="1" placeholder="Quantity">
+      `;
+      hardwareList.appendChild(newHardware);
+    }
+
     function calculatePrice() {
       const subscriptionPrices = {
         "Free": 0,
@@ -233,8 +248,15 @@
 
       const subscription = document.getElementById("subscription").value;
       const numScreens = parseInt(document.getElementById("num-screens").value, 10);
-      const hardwareType = document.querySelector(".hardware-type").value;
-      const hardwareQuantity = parseInt(document.querySelector(".hardware-quantity").value, 10);
+      const hardwareEntries = document.querySelectorAll(".hardware-entry");
+      let hardwareCost = 0;
+
+      hardwareEntries.forEach(entry => {
+        const hardwareType = entry.querySelector(".hardware-type").value;
+        const hardwareQuantity = parseInt(entry.querySelector(".hardware-quantity").value, 10);
+        hardwareCost += hardwarePrices[hardwareType] * hardwareQuantity;
+      });
+
       const addOns = Array.from(document.querySelectorAll(".add-on:checked")).map(input => input.value);
       const isYearly = document.getElementById("is-yearly").checked;
       const shippingType = document.getElementById("shipping-type").value;
@@ -246,9 +268,6 @@
       // Calculate subscription cost
       let subscriptionCost = subscriptionPrices[subscription] * numScreens;
       if (isYearly) subscriptionCost *= 12 * 0.9; // Apply yearly discount
-
-      // Calculate hardware cost
-      const hardwareCost = hardwarePrices[hardwareType] * hardwareQuantity;
 
       // Calculate add-on cost
       const addOnCost = addOns.reduce((sum, addOn) => sum + addOnPrices[addOn], 0);
